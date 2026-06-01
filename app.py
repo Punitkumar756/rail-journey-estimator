@@ -41,21 +41,19 @@ def predict():
         if model is None or scaler is None:
             return jsonify({'error': 'Model not loaded'}), 500
         
-        # Create feature array (order matters - must match training data)
-        # Features are: [Total_Distance, Total_Stops, Departure_Hour, Time_of_Day_Evening, Time_of_Day_Morning, Time_of_Day_Night]
-        # Determine time of day based on departure hour
-        time_of_day_evening = 1 if 17 <= departure_hour < 21 else 0  # Evening: 5 PM - 9 PM
-        time_of_day_morning = 1 if 6 <= departure_hour < 12 else 0   # Morning: 6 AM - 12 PM
-        time_of_day_night = 1 if departure_hour >= 21 or departure_hour < 6 else 0  # Night: 9 PM - 6 AM
-        
-        features = np.array([[distance, total_stops, departure_hour, 
-                             time_of_day_evening, time_of_day_morning, time_of_day_night]])
+        # Create feature array with the 3 core features
+        # Features: [Total_Distance, Total_Stops, Departure_Hour]
+        features = np.array([[distance, total_stops, departure_hour]])
         
         # Scale features using the loaded scaler
         features_scaled = scaler.transform(features)
         
         # Make prediction
         prediction = model.predict(features_scaled)[0]
+        
+        # Ensure prediction is non-negative
+        if prediction < 0:
+            prediction = 0
         
         # Round to 2 decimal places
         prediction = round(prediction, 2)
@@ -80,7 +78,7 @@ def model_info():
     """Get model information"""
     return jsonify({
         'model_name': 'Rail Journey Estimator',
-        'features': feature_names if feature_names else ['Total_Distance', 'Total_Stops', 'Departure_Hour', 'Time_of_Day_Evening', 'Time_of_Day_Morning', 'Time_of_Day_Night'],
+        'features': ['Total_Distance', 'Total_Stops', 'Departure_Hour'],
         'output': 'Journey Duration (Minutes)'
     })
 
