@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rail Journey Estimator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🚄 Rail Journey Estimator</h1>
+                <p class="subtitle">Predict journey duration using machine learning</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="card prediction-card">
+                <h2>Make a Prediction</h2>
+                <form id="predictionForm" class="form">
+                    <!-- Distance Input -->
+                    <div class="form-group">
+                        <label for="distance" class="form-label">
+                            Distance (km)
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="distance" 
+                                name="distance" 
+                                placeholder="Enter distance in kilometers"
+                                min="0"
+                                step="0.1"
+                                required
+                                class="form-input"
+                            >
+                            <span class="unit">km</span>
+                        </div>
+                        <small class="helper-text">Enter the total distance to be covered</small>
+                    </div>
+
+                    <!-- Total Stops Input -->
+                    <div class="form-group">
+                        <label for="total_stops" class="form-label">
+                            Total Stops
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="total_stops" 
+                                name="total_stops" 
+                                placeholder="Enter number of stops"
+                                min="0"
+                                step="1"
+                                required
+                                class="form-input"
+                            >
+                            <span class="unit">stops</span>
+                        </div>
+                        <small class="helper-text">Enter the number of stations the train will stop at</small>
+                    </div>
+
+                    <!-- Departure Hour Input -->
+                    <div class="form-group">
+                        <label for="departure_hour" class="form-label">
+                            Departure Time (Hour)
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="departure_hour" 
+                                name="departure_hour" 
+                                placeholder="Enter departure hour (0-23)"
+                                min="0"
+                                max="23"
+                                step="1"
+                                value="12"
+                                required
+                                class="form-input"
+                            >
+                            <span class="unit">hour</span>
+                        </div>
+                        <small class="helper-text">Departure time in 24-hour format (0=midnight, 12=noon, 23=11 PM)</small>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary" id="predictBtn">
+                        <span class="btn-text">Predict Duration</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </form>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+                
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+            </div>
+
+            <!-- Results Card -->
+            <div id="resultsCard" class="card results-card" style="display: none;">
+                <h2>Prediction Result</h2>
+                <div class="result-content">
+                    <div class="result-box">
+                        <div class="result-label">Estimated Journey Duration</div>
+                        <div class="result-value" id="resultValue">--</div>
+                    </div>
+
+                    <div class="input-summary">
+                        <h3>Input Summary</h3>
+                        <div class="summary-item">
+                            <span class="summary-label">Distance:</span>
+                            <span class="summary-value" id="summaryDistance">--</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Stops:</span>
+                            <span class="summary-value" id="summaryStops">--</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Departure Time:</span>
+                            <span class="summary-value" id="summaryHour">--:--</span>
+                        </div>
+                    </div>
+
+                    <div class="model-info">
+                        <h3>Model Information</h3>
+                        <p>
+                            This prediction is made by a machine learning model trained on historical 
+                            rail journey data. The model analyzes the distance and number of stops to 
+                            estimate the total journey duration.
+                        </p>
+                        <div class="info-stats">
+                            <div class="stat">
+                                <span class="stat-label">Model Type:</span>
+                                <span class="stat-value">Optimized Regressor</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Features:</span>
+                                <span class="stat-value">Distance, Total Stops</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        Make Another Prediction
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feature Information -->
+            <div class="card info-card">
+                <h3>How It Works</h3>
+                <div class="info-content">
+                    <div class="info-item">
+                        <div class="info-icon">📏</div>
+                        <div>
+                            <strong>Distance</strong>
+                            <p>The total kilometers that the train will travel. Longer distances typically result in longer journey times.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">🛑</div>
+                        <div>
+                            <strong>Total Stops</strong>
+                            <p>The number of stations where the train will stop. More stops mean more stopping time and longer journeys.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">⏱️</div>
+                        <div>
+                            <strong>Duration Prediction</strong>
+                            <p>The estimated time in minutes for the complete journey, calculated by our trained machine learning model.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Rail Journey Estimator | Powered by ML</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
